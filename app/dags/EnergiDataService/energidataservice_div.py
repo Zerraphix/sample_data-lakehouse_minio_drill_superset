@@ -120,7 +120,7 @@ def extract_ElectricityProdex(**kwargs):
     #https://api.energidataservice.dk/dataset/ElectricityProdex5MinRealtime?offset=0&start=2022-12-26T00:00&end=2022-12-27T00:00&sort=Minutes5UTC%20DESC&timezone=dk
 
 @task
-def write_to_bucket(eProdex_jsons2, table_patg):
+def write_to_bucket(eProdex_jsons, table_path):
     import pandas as pd
     from minio import Minio
     from io import BytesIO
