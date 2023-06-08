@@ -167,4 +167,4 @@ cython_debug/
 #.idea/
 
 logs/*
-app/dags/EnergiDataService/data/ElectricityProdex_2023-05-31T22.00.00+00.00_#1.json
+app/dags/EnergiDataService/data/*
