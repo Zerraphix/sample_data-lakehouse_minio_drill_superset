@@ -248,7 +248,51 @@ def electrical_power_gross_back():
         eProdex_jsons = extract_ElectricityProdex_back(**args)
     write_to_bucket(eProdex_jsons, 'back')
 
+@dag( 
+    dag_id='gas_power_gross',
+    schedule=timedelta(minutes=10),
+    start_date=pendulum.datetime(2023, 6, 1, 0, 0, 0, tz="Europe/Copenhagen"),
+    catchup=True,
+    max_active_tasks=5,
+    max_active_runs=5,
+    tags=['experimental', 'energy', 'rest api'],
+    default_args=default_task_args,)
+def gas_power_gross():
+    print("Doing energy_data")
+    setups()
+    if __name__ != "__main__": # as in "normal" operation as DAG stated in Airflow
+        eProdex_jsons = extract_GasProdex_back()
+    else: # more or less test mode
+        eProdex_jsons = extract_GasProdex_back(ts=datetime.now().isoformat())
+    write_to_bucket(eProdex_jsons, 'live')
+
+@task
+def extract_GasProdex_back(**kwargs):
+    global URL, data_dir, page_size
+    service = 'dataset/Gasflow'
+    
+    params = {}
+    #params['limit'] = 4
+    #page_size = 500
+
+    #print('kwargs:', kwargs)
+    for k, v in kwargs.items():
+        print(k, '=', v)
+
+    ts = datetime.fromisoformat(kwargs['ts'])
+
+    params['start'] = kwargs['data_interval_start'].replace(tzinfo=None).isoformat(timespec='minutes')
+    params['end']   = kwargs['data_interval_end'].replace(tzinfo=None).isoformat(timespec='minutes')
+
+    #print(params['start'], params['end'])
+
+    return pull_data(service, data_dir, 'ElectricityProdex_back', ts, page_size, params)
+    #return 'dummy'
+    #https://api.energidataservice.dk/dataset/ElectricityProdex5MinRealtime?offset=0&start=2022-12-26T00:00&end=2022-12-27T00:00&sort=Minutes5UTC%20DESC&timezone=dk
+
+
 
 
 electrical_power_gross()
 electrical_power_gross_back()
+gas_power_gross()
